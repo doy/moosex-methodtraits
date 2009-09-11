@@ -1,0 +1,18 @@
+Things we want to support:
+
+- basic applying of traits to methods:
+    command foo => $code;
+  should install $code as 'foo' in the current class, with the command trait
+  applied
+- setting attributes in the traits that we apply:
+    command foo => $code, formatter => $format;
+  should install $code as 'foo', and set the formatter attribute to $format on
+  the method metaobject
+- passing in things other than coderefs
+    alias foo => 'bar';
+  should be able to look 'bar' up in the current package, and install foo as an
+  alias to it (potentially with a trait applied)
+- applying traits to existing methods
+    command 'foo';
+  should find an existing 'foo' method in the current class, and apply the
+  command trait to it
