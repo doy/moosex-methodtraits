@@ -1,5 +1,6 @@
 package MooseX::MethodTraits;
 use Moose::Exporter;
+use Scalar::Util qw(blessed);
 
 =head1 NAME
 
@@ -29,8 +30,9 @@ sub _generate_method_creators {
             # initializing attributes in the method traits that are applied
             my ($method, $args) = $munge->(@_);
 
+            my $superclass = blessed($method) || $meta->method_metaclass;
             my $method_metaclass = Moose::Meta::Class->create_anon_class(
-                superclasses => [$meta->method_metaclass],
+                superclasses => [$superclass],
                 roles        => $traits,
                 cache        => 1,
             );
