@@ -15,7 +15,7 @@ BEGIN {
                 munge  => sub {
                     my $name = shift;
                     return sub { shift->$name(@_) },
-                           [ aliased_from => $name, @_ ];
+                           { aliased_from => $name, @_ };
                 },
             }
         }

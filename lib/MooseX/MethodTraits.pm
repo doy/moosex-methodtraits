@@ -21,7 +21,7 @@ sub _generate_method_creators {
     for my $sub (keys %$with_traits) {
         my $spec = $with_traits->{$sub};
         my $traits = $spec->{traits} || [];
-        my $munge = $spec->{munge} || sub { shift, \@_ };
+        my $munge = $spec->{munge} || sub { shift, {@_} };
 
         my $code = sub {
             my $meta = shift;
@@ -37,13 +37,21 @@ sub _generate_method_creators {
                 cache        => 1,
             );
 
-            $meta->add_method(
-                $name => $method_metaclass->name->wrap(
-                    $method,
-                    name         => $name,
-                    package_name => $meta->name,
-                )
+            my $method_meta = $method_metaclass->name->wrap(
+                $method,
+                name         => $name,
+                package_name => $meta->name,
             );
+
+            $meta->add_method($name => $method_meta);
+
+            return unless $args;
+
+            for my $attr_name (map { $_->meta->get_attribute_list } @$traits) {
+                next unless exists $args->{$attr_name};
+                my $attr = $method_meta->meta->find_attribute_by_name($attr_name);
+                $attr->set_value($method_meta, $args->{$attr_name});
+            }
         };
         $package_meta->add_package_symbol('&' . $sub => $code);
     }
