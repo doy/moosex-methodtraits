@@ -13,6 +13,8 @@ BEGIN {
             alias => {
                 traits => ['Foo::Alias'],
                 munge  => sub {
+                    my $meta = shift;
+                    my $alias_name = shift;
                     my $name = shift;
                     return sub { shift->$name(@_) },
                            { aliased_from => $name, @_ };

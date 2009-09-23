@@ -1,6 +1,6 @@
 package MooseX::MethodTraits;
 use Moose::Exporter;
-use Scalar::Util qw(blessed);
+use Scalar::Util qw(blessed reftype);
 
 =head1 NAME
 
@@ -21,14 +21,18 @@ sub _generate_method_creators {
     for my $sub (keys %$with_traits) {
         my $spec = $with_traits->{$sub};
         my $traits = $spec->{traits} || [];
-        my $munge = $spec->{munge} || sub { shift, {@_} };
-
-        my $code = sub {
+        my $munge = $spec->{munge} || sub {
             my $meta = shift;
             my $name = shift;
-            # XXX: need to do something with $args - these should be for
-            # initializing attributes in the method traits that are applied
+            my $method = reftype($_[0]) && reftype($_[0]) eq 'CODE'
+                ? shift : $meta->find_method_by_name($name);
+            return $method, {@_};
+        };
+
+        my $code = sub {
             my ($method, $args) = $munge->(@_);
+            my $meta = shift;
+            my $name = shift;
 
             my $superclass = blessed($method) || $meta->method_metaclass;
             my $method_metaclass = Moose::Meta::Class->create_anon_class(
